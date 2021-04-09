@@ -42,6 +42,7 @@ public:
     }
     void mine(int diff)
     {
+        cout<<"Hey!!!!!!!"<<endl;
         string ch(diff,'0');
         while(myHash.substr(0,diff)!=ch)
         {
