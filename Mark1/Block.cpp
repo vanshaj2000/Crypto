@@ -40,6 +40,16 @@ public:
             ans+=getDES(temp.substr(i,16));
         return ans;
     }
+    void mine(int diff)
+    {
+        string ch(diff,'0');
+        while(myHash.substr(0,diff)!=ch)
+        {
+            myHash=calculateHash(tr->reciever+tr->sender+to_string(tr->amount)+to_string(nonce));
+            nonce++;
+        }
+        cout<<"Block Mined with hash "<<myHash<<endl;
+    }
     int getIndex()
     {
         return index;
