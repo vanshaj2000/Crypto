@@ -8,11 +8,13 @@ struct Transaction
     double amount;
     string sender;
     string reciever;
-    Transaction(double am,string s1,string r1)
+    int sAdr;
+    Transaction(double am,string s1,string r1,int ss)
     {
         amount=am;
         sender=s1;
         reciever=r1;
+        sAdr=ss;
     };
 };
 class Block
@@ -23,7 +25,7 @@ public:
     string prevHash;
     Transaction *tr;
     int nonce;
-    Block()
+    Block()//Default, not being used
     {
         int x=2;
     }
@@ -67,18 +69,41 @@ public:
     {
         return prevHash;
     }
-    bool isHashValid()//Proof of Work
+    bool ZKP()//Zero-Knowledge Proof
     {
-        return true;
+        int x=tr->sAdr,g=2,p=13;
+        int y=pow(g,x);
+        y=y%p;
+        for(int i=0;i<p-1;i++)
+        {
+            for(int j=0;j<2;j++)
+            {
+                int h=pow(2,i);
+                h=h%p;
+                int s=(i+(j*x))%(p-1);
+                int first=pow(g,s);
+                first=first%p;
+                int sec=h*(pow(y,j));
+                sec=sec%p;
+                if(first==sec)
+                {
+                    cout<<"\nTransaction verified";
+                    return true;
+                }
+            }
+        }
+        cout<<"Transaction is not verified"<<endl;
+        return false;
     }
 };
 class Blockchain: public Block
 {
 public:
+    map<string,vector<Transaction*>> vUser;
     vector<Block*> BC;
     Blockchain()
     {
-        Transaction* tt=new Transaction(0,"Gen","Gen");
+        Transaction* tt=new Transaction(0,"Gen","Gen",0);
         Block* gen=new Block(0,"0",tt);
         BC.push_back(gen);
     }
@@ -92,6 +117,8 @@ public:
     }
     void addBlock(Transaction* data)
     {
+        vUser[data->sender].push_back(data);
+        vUser[data->reciever].push_back(data);
         Block* preB=BC[BC.size()-1];
         Block* nw=new Block((preB->index)+1,preB->myHash,data);
         nw->mine(2);
@@ -115,14 +142,30 @@ public:
         for (int i=0;i<BC.size();i++)
         {
             Block* currentBlock=BC[i];
-            printf("\n\nBlock ===================================");
+            printf("\nBlock ===================================");
             printf("\nIndex: %d", currentBlock->getIndex());
             printf("\nAmount: %f", currentBlock->tr->amount);
             cout<<"\nSenderKey: "<<currentBlock->tr->sender;
             cout<<"\nRecieverKey: "<<currentBlock->tr->reciever;
             cout<<"\nprevHash: "<<currentBlock->prevHash;
             cout<<"\nmyHash: "<<currentBlock->myHash;
-            printf("\nIs Block Valid?: %d", currentBlock->isHashValid());
+            printf("\nIs Block Valid?: %d\n", currentBlock->ZKP());
+        }
+    }
+    void viewUser(string user)
+    {
+        if(vUser[user].size()==0)
+        {
+            cout<<"No succesfull transactions by this user"<<endl;
+            return;
+        }
+        for(int i=0;i<vUser[user].size();i++)
+        {
+            Transaction* temp=vUser[user][i];
+            cout<<"********Succesfull Transaction********"<<endl;
+            cout<<"Sender Name- "<<temp->sender<<endl;
+            cout<<"Reciever Name- "<<temp->reciever<<endl;
+            cout<<"Amount exchanged- "<<temp->amount<<endl;
         }
     }
 };
@@ -136,12 +179,13 @@ int main()
     {
         string snd,rcv;
         cin>>snd>>rcv;
-        int am;
-        cin>>am;
-        Transaction* trn=new Transaction(am,snd,rcv);
+        int am,ad;
+        cin>>am>>ad;
+        Transaction* trn=new Transaction(am,snd,rcv,ad);
         ch->addBlock(trn);
     }
     ch->printChain();
+    ch->viewUser("vanshaj");
     return 0;
 }
 
@@ -159,8 +203,8 @@ int main()
             h = (GENERATOR ** i) % PRIME
             #calculate s
             s = (i + j * traID) % (PRIME - 1)
-            #calcula
-first = (GENERATOR ** s) % PRIME
+            #calculate first and second
+            first = (GENERATOR ** s) % PRIME
             second = (h * (y ** j)) % PRIME
             #check if both are equal
             if first == second:
