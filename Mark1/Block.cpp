@@ -15,7 +15,6 @@ struct Transaction
         reciever=r1;
     };
 };
-
 class Block
 {
 public:
@@ -68,10 +67,10 @@ public:
     {
         return prevHash;
     }
-    bool isHashValid()
+    bool isHashValid()//Proof of Work
     {
         return true;
-    }//Proof of Work
+    }
 };
 class Blockchain: public Block
 {
@@ -95,7 +94,7 @@ public:
     {
         Block* preB=BC[BC.size()-1];
         Block* nw=new Block((preB->index)+1,preB->myHash,data);
-        nw->mine(3);
+        nw->mine(2);
         BC.push_back(nw);
     }
     bool isChainValid()
@@ -130,18 +129,18 @@ public:
 int main()
 {
     Blockchain* ch=new Blockchain();
-    string snd,rcv;
-    cin>>snd>>rcv;
-    int am;
-    cin>>am;
-    Transaction* trn=new Transaction(am,snd,rcv);
-    ch->addBlock(trn);
-    string snd1,rcv1;
-    cin>>snd1>>rcv1;
-    int am1;
-    cin>>am1;
-    Transaction* trn1=new Transaction(am1,snd1,rcv1);
-    ch->addBlock(trn1);
+    int n;
+    cout<<"Enter the number of transactions\n";
+    cin>>n;
+    for(int i=0;i<n;i++)
+    {
+        string snd,rcv;
+        cin>>snd>>rcv;
+        int am;
+        cin>>am;
+        Transaction* trn=new Transaction(am,snd,rcv);
+        ch->addBlock(trn);
+    }
     ch->printChain();
     return 0;
 }
