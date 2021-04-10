@@ -24,6 +24,10 @@ public:
     string prevHash;
     Transaction *tr;
     int nonce;
+    Block()
+    {
+        int x=2;
+    }
     Block(int ind,string prevH,Transaction* gen)
     {
         index=ind;
@@ -42,14 +46,15 @@ public:
     }
     void mine(int diff)
     {
-        cout<<"Hey!!!!!!!"<<endl;
+        cout<<"Mining Begins"<<endl;
         string ch(diff,'0');
         while(myHash.substr(0,diff)!=ch)
         {
             myHash=calculateHash(tr->reciever+tr->sender+to_string(tr->amount)+to_string(nonce));
+            //cout<<myHash<<endl;
             nonce++;
         }
-        cout<<"Block Mined with hash "<<myHash<<endl;
+        cout<<"Block Mined with hash "<<endl<<myHash<<endl;
     }
     int getIndex()
     {
@@ -68,7 +73,7 @@ public:
         return true;
     }//Proof of Work
 };
-class Blockchain
+class Blockchain: public Block
 {
 public:
     vector<Block*> BC;
@@ -90,6 +95,7 @@ public:
     {
         Block* preB=BC[BC.size()-1];
         Block* nw=new Block((preB->index)+1,preB->myHash,data);
+        nw->mine(3);
         BC.push_back(nw);
     }
     bool isChainValid()
@@ -139,3 +145,27 @@ int main()
     ch->printChain();
     return 0;
 }
+
+/*def mine(index, traID, blockchain):
+    #start time to mine blocks
+    start = time.time()
+    #get the traID for the previous block
+    traID = blockchain[index - 1][1]
+    #calculate y
+    y = (GENERATOR ** traID) % PRIME
+    #bruteforce values of r and b to solve for the ZKP
+    for i in range(0, PRIME - 1):
+        for j in range(0, 2):
+            #calculate h
+            h = (GENERATOR ** i) % PRIME
+            #calculate s
+            s = (i + j * traID) % (PRIME - 1)
+            #calcula
+first = (GENERATOR ** s) % PRIME
+            second = (h * (y ** j)) % PRIME
+            #check if both are equal
+            if first == second:
+                duration = time.time() - start
+                #return the [r,b] tuple and the time it took to mine the block
+                return [i,j], duration
+*/

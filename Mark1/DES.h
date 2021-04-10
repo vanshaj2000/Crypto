@@ -56,7 +56,6 @@ string bin2hex(string s)
     }
     return hex;
 }
-  
 string permute(string k,int* arr,int n)
 {
     string per = "";
@@ -77,7 +76,6 @@ string shift_left(string k,int shifts)
     }
     return k;
 }
-  
 string xor_(string a,string b)
 {
     string ans = "";
