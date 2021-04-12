@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#include <sqlite3.h>
 #include "sha256.h"
 #include "DES.h"
 using namespace std;
@@ -171,6 +172,17 @@ public:
 };
 int main()
 {
+    sqlite3* DB;
+    int exit = 0;
+    exit = sqlite3_open("example.db", &DB);
+    if (exit) {
+        std::cerr << "Error open DB " << sqlite3_errmsg(DB) << std::endl;
+        return (-1);
+    }
+    else
+        std::cout << "Opened Database Successfully!" << std::endl;
+    sqlite3_close(DB);
+    return (0);
     Blockchain* ch=new Blockchain();
     int n;
     cout<<"Enter the number of transactions\n";
@@ -188,27 +200,3 @@ int main()
     ch->viewUser("vanshaj");
     return 0;
 }
-
-/*def mine(index, traID, blockchain):
-    #start time to mine blocks
-    start = time.time()
-    #get the traID for the previous block
-    traID = blockchain[index - 1][1]
-    #calculate y
-    y = (GENERATOR ** traID) % PRIME
-    #bruteforce values of r and b to solve for the ZKP
-    for i in range(0, PRIME - 1):
-        for j in range(0, 2):
-            #calculate h
-            h = (GENERATOR ** i) % PRIME
-            #calculate s
-            s = (i + j * traID) % (PRIME - 1)
-            #calculate first and second
-            first = (GENERATOR ** s) % PRIME
-            second = (h * (y ** j)) % PRIME
-            #check if both are equal
-            if first == second:
-                duration = time.time() - start
-                #return the [r,b] tuple and the time it took to mine the block
-                return [i,j], duration
-*/
