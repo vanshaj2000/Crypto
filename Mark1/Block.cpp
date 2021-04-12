@@ -116,6 +116,17 @@ public:
     {
         return BC[BC.size()-1];
     }
+    void addBlock(Transaction* data2,int indi,string prevH,string myH)
+    {
+        vUser[data2->sender].push_back(data2);
+        vUser[data2->reciever].push_back(data2);
+        Block* n2=new Block();
+        n2->myHash=myH;
+        n2->prevHash=prevH;
+        n2->tr=data2;
+        n2->index=indi;
+        BC.push_back(n2);
+    }
     void addBlock(Transaction* data)
     {
         vUser[data->sender].push_back(data);
@@ -123,6 +134,28 @@ public:
         Block* preB=BC[BC.size()-1];
         Block* nw=new Block((preB->index)+1,preB->myHash,data);
         nw->mine(2);
+        sqlite3* DB;
+        char* messaggeError;
+        int exit=0;
+        exit=sqlite3_open("blockchain.db", &DB);
+        string str="INSERT INTO BLOCK VALUES(";
+        str+=to_string(nw->index)+",";
+        str+="'"+nw->tr->sender+"',";
+        str+="'"+nw->tr->reciever+"',";
+        str+="'"+nw->prevHash+nw->myHash+"',";
+        str+="'"+to_string(nw->tr->sAdr)+"',";
+        str+=to_string(nw->tr->amount);
+        str+=");";
+        //cout<<str<<endl;
+        exit=sqlite3_exec(DB,str.c_str(),NULL,0,&messaggeError);
+        if(exit!=SQLITE_OK)
+        {
+            cerr<<"Error Insert"<<endl;
+            sqlite3_free(messaggeError);
+        }
+        else
+            cout<<"Records created Successfully!"<<endl;       
+        sqlite3_close(DB);
         BC.push_back(nw);
     }
     bool isChainValid()
@@ -170,20 +203,48 @@ public:
         }
     }
 };
+Blockchain* glob;
+static int callback(void* data,int argc,char** argv,char** azColName)
+{
+    string prevH,myH;
+    int ini=0;
+    string snd,rcv;
+    int am,ad;
+    //fprintf(stderr,"%s: ",(const char*)data);
+    for(int i=0;i<argc;i++)
+    {
+        //azColName[i] is name of attribute
+        //argv[i] is value in string
+        if(i==0)
+            ini=stoi(argv[i]);
+        if(i==1)
+            snd=argv[i];
+        if(i==2)
+            rcv=argv[i];
+        if(i==3)
+        {
+            string temp=argv[i];
+            prevH=temp.substr(0,64);
+            myH=temp.substr(64,64);
+        }
+        if(i==4)
+            ad=stoi(argv[i]);
+        if(i==5)
+            am=stod(argv[i]);
+    }
+    Transaction* n3=new Transaction(am,snd,rcv,ad);
+    glob->addBlock(n3,ini,prevH,myH);
+    return 0;
+}
 int main()
 {
+    glob=new Blockchain();
     sqlite3* DB;
-    int exit = 0;
-    exit = sqlite3_open("example.db", &DB);
-    if (exit) {
-        std::cerr << "Error open DB " << sqlite3_errmsg(DB) << std::endl;
-        return (-1);
-    }
-    else
-        std::cout << "Opened Database Successfully!" << std::endl;
+    int exit=0;
+    exit=sqlite3_open("blockchain.db", &DB);
+    string query="SELECT * FROM BLOCK;";
+    sqlite3_exec(DB,query.c_str(),callback,NULL,NULL);
     sqlite3_close(DB);
-    return (0);
-    Blockchain* ch=new Blockchain();
     int n;
     cout<<"Enter the number of transactions\n";
     cin>>n;
@@ -194,9 +255,9 @@ int main()
         int am,ad;
         cin>>am>>ad;
         Transaction* trn=new Transaction(am,snd,rcv,ad);
-        ch->addBlock(trn);
+        glob->addBlock(trn);
     }
-    ch->printChain();
-    ch->viewUser("vanshaj");
+    glob->printChain();
+    //ch->viewUser("vanshaj");
     return 0;
 }
