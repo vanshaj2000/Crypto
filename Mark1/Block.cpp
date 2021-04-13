@@ -58,33 +58,21 @@ public:
         }
         cout<<"Block Mined with hash "<<endl<<myHash<<endl;
     }
-    int getIndex()
-    {
-        return index;
-    }
-    string getHash()
-    {
-        return myHash;
-    }
-    string prevHash2()
-    {
-        return prevHash;
-    }
     bool ZKP()//Zero-Knowledge Proof
     {
-        int x=tr->sAdr,g=2,p=13;
-        int y=pow(g,x);
+        ll x=tr->sAdr,g=2,p=13;
+        ll y=pow(g,x);
         y=y%p;
         for(int i=0;i<p-1;i++)
         {
             for(int j=0;j<2;j++)
             {
-                int h=pow(2,i);
+                ll h=pow(2,i);
                 h=h%p;
-                int s=(i+(j*x))%(p-1);
-                int first=pow(g,s);
+                ll s=(i+(j*x))%(p-1);
+                ll first=pow(g,s);
                 first=first%p;
-                int sec=h*(pow(y,j));
+                ll sec=h*(pow(y,j));
                 sec=sec%p;
                 if(first==sec)
                 {
