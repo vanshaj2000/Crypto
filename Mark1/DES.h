@@ -26,7 +26,6 @@ string hex2bin(string s)
 }
 string bin2hex(string s)
 {
-    // binary to hexadecimal conversion
     unordered_map<string, string> mp;
     mp["0000"]="0";
     mp["0001"]="1";
@@ -45,7 +44,8 @@ string bin2hex(string s)
     mp["1110"]="E";
     mp["1111"]="F";
     string hex="";
-    for (int i=0;i<s.length();i+=4)
+    int i=0;
+    while(i<s.length())
     {
         string ch="";
         ch+=s[i];
@@ -53,46 +53,53 @@ string bin2hex(string s)
         ch+=s[i+2];
         ch+=s[i+3];
         hex+=mp[ch];
+        i+=4;
     }
     return hex;
 }
 string permute(string k,int* arr,int n)
 {
-    string per = "";
-    for(int i=0;i<n;i++)
+    string per="";
+    int i=0;
+    while(i<n)
+    {
         per+=k[arr[i]-1];
+        i++;
+    }
     return per;
 }
 string shift_left(string k,int shifts)
 {
     string s="";
-    for(int i=0;i<shifts;i++)
+    int i=0;
+    while(i<shifts)
     {
         for(int j=1;j<28;j++)
             s+=k[j];
         s+=k[0];
         k=s;
         s="";
+        i++;
     }
     return k;
 }
 string xor_(string a,string b)
 {
-    string ans = "";
-    for (int i=0;i<a.size();i++)
+    string ans="";
+    int i=0;
+    while(i<a.size())
     {
         if (a[i]==b[i])
             ans+="0";
         else
             ans+="1";
+        i++;
     }
     return ans;
 }
-string encrypt(string pt, vector<string> rkb, vector<string> rk)
+string encrypt(string pt,vector<string> rkb,vector<string> rk)
 {
-    // Hexadecimal to binary
     pt=hex2bin(pt);
-    // Initial Permutation Table
     int initial_perm[64] = { 58, 50, 42, 34, 26, 18, 10, 2,
                              60, 52, 44, 36, 28, 20, 12, 4,
                              62, 54, 46, 38, 30, 22, 14, 6,
@@ -101,14 +108,10 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                              59, 51, 43, 35, 27, 19, 11, 3,
                              61, 53, 45, 37, 29, 21, 13, 5,
                              63, 55, 47, 39, 31, 23, 15, 7 };
-    // Initial Permutation
+
     pt=permute(pt,initial_perm,64);
-    //cout<<"After initial permutation: "<<bin2hex(pt)<<endl;
-    // Splitting
     string left=pt.substr(0,32);
     string right=pt.substr(32,32);
-    //cout<<"After splitting: L0="<<bin2hex(left)<<" R0="<<bin2hex(right)<<endl;
-    // Expansion D-box Table
     int exp_d[48] = { 32, 1, 2, 3, 4, 5, 4, 5,
                       6, 7, 8, 9, 8, 9, 10, 11,
                       12, 13, 12, 13, 14, 15, 16, 17,
@@ -116,7 +119,6 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                       22, 23, 24, 25, 24, 25, 26, 27,
                       28, 29, 28, 29, 30, 31, 32, 1 };
   
-    // S-box Table
     int s[8][4][16] = { { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
                           0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
                           4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0,
@@ -151,7 +153,7 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                           7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
                           2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 } };
   
-    // Straight Permutation Table
+
     int per[32] = { 16, 7, 20, 21,
                     29, 12, 28, 17,
                     1, 15, 23, 26,
@@ -161,17 +163,11 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                     19, 13, 30, 6,
                     22, 11, 4, 25 };
   
-    //cout<<endl;
     for(int i=0;i<16;i++)
     {
-        // Expansion D-box
         string right_expanded=permute(right, exp_d, 48);
-  
-        // XOR RoundKey[i] and right_expanded
         string x = xor_(rkb[i],right_expanded);
-  
-        // S-boxes
-        string op = "";
+        string op="";
         for(int i=0;i<8;i++)
         {
             int row=2*int(x[i*6]-'0')+int(x[i*6+5]-'0');
@@ -185,20 +181,14 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
             val=val%2;
             op+=char(val+'0');
         }
-        // Straight D-box
         op=permute(op,per,32);
-        // XOR left and op
         x=xor_(op,left);
         left=x;
-        // Swapper
         if(i!=15){
             swap(left, right);
         }
-        //cout<<"Round "<<i+1<<" "<<bin2hex(left)<<" "<<bin2hex(right)<<" "<<rk[i]<<endl;
     }
-    // Combination
     string combine=left+right;
-    // Final Permutation Table
     int final_perm[64] = { 40, 8, 48, 16, 56, 24, 64, 32,
                            39, 7, 47, 15, 55, 23, 63, 31,
                            38, 6, 46, 14, 54, 22, 62, 30,
@@ -208,23 +198,14 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                            34, 2, 42, 10, 50, 18, 58, 26,
                            33, 1, 41, 9, 49, 17, 57, 25 };
   
-    // Final Permutation
     string cipher=bin2hex(permute(combine,final_perm,64));
     return cipher;
 }
 string getDES(string pt)
 {
     string key;
-    /*cout<<"Enter plain text(in hexadecimal): ";
-    cin>>pt;
-    cout<<"Enter key(in hexadecimal): ";
-    cin>>key;*/
-    //pt="123456ABCD132536";
     key="133457799BBCDFF1";
-    // Key Generation
-    // Hex to binary
     key=hex2bin(key);
-    // Parity bit drop table
     int keyp[56] = { 57, 49, 41, 33, 25, 17, 9,
                      1, 58, 50, 42, 34, 26, 18,
                      10, 2, 59, 51, 43, 35, 27,
@@ -234,15 +215,14 @@ string getDES(string pt)
                      14, 6, 61, 53, 45, 37, 29,
                      21, 13, 5, 28, 20, 12, 4 };
   
-    // getting 56 bit key from 64 bit using the parity bits
-    key=permute(key,keyp,56);// key without parity
-    // Number of bit shifts
+
+    key=permute(key,keyp,56);
     int shift_table[16] = { 1, 1, 2, 2,
                             2, 2, 2, 2,
                             1, 2, 2, 2,
                             2, 2, 2, 1 };
   
-    // Key- Compression Table
+
     int key_comp[48] = { 14, 17, 11, 24, 1, 5,
                          3, 28, 15, 6, 21, 10,
                          23, 19, 12, 4, 26, 8,
@@ -252,30 +232,21 @@ string getDES(string pt)
                          44, 49, 39, 56, 34, 53,
                          46, 42, 50, 36, 29, 32 };
   
-    // Splitting
     string left=key.substr(0,28);
     string right=key.substr(28,28);
-    vector<string> rkb;//rkb for RoundKeys in binary
-    vector<string> rk;//rk for RoundKeys in hexadecimal
-    for(int i=0;i<16;i++)
+    vector<string> rkb;
+    vector<string> rk;
+    int i=0;
+    while(i<16)
     {
-        // Shifting
         left=shift_left(left,shift_table[i]);
         right=shift_left(right,shift_table[i]);
-        // Combining
         string combine=left+right;
-        // Key Compression
         string RoundKey=permute(combine,key_comp,48);
         rkb.push_back(RoundKey);
         rk.push_back(bin2hex(RoundKey));
+        i++;
     }
-    //cout<<"\nEncryption:\n\n";
     string cipher=encrypt(pt,rkb,rk);
     return cipher;
-    //cout<<"\nCipher Text: "<<cipher<<endl;
-    //cout<<"\nDecryption\n\n";
-    //reverse(rkb.begin(),rkb.end());
-    //reverse(rk.begin(),rk.end());
-    //string text=encrypt(cipher,rkb,rk);
-    //cout<<"\nPlain Text: "<<text<<endl;
 }

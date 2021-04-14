@@ -4,6 +4,13 @@
 #include "DES.h"
 typedef long long ll;
 using namespace std;
+/*
+Unique ID's
+Vanshaj-123
+Utkarsh-321
+Kartik-132
+Pandey-231
+*/
 vector<string> users={"Vanshaj","Utkarsh","Kartik","Saksham"};
 vector<int> ys={53,89,68,34};
 ll r;
@@ -69,7 +76,7 @@ public:
     bool ZKP()//Zero-Knowledge Proof
     {
         int indd=-1;
-        for(int i=0;i<4;i++)
+        for(int i=0;i<users.size();i++)
         {
             if(tr->sender==users[i])
                 indd=i;
@@ -175,13 +182,13 @@ public:
         for (int i=0;i<BC.size();i++)
         {
             Block* currentBlock=BC[i];
-            printf("\nBlock ===================================");
-            printf("\nIndex: %d", currentBlock->getIndex());
-            printf("\nAmount: %f", currentBlock->tr->amount);
-            cout<<"\nSenderKey: "<<currentBlock->tr->sender;
-            cout<<"\nRecieverKey: "<<currentBlock->tr->reciever;
-            cout<<"\nprevHash: "<<currentBlock->prevHash;
-            cout<<"\nmyHash: "<<currentBlock->myHash;
+            cout<<"\n********************Block***********************"<<endl;
+            printf("Index: %d\n", currentBlock->getIndex());
+            printf("Amount: %f\n", currentBlock->tr->amount);
+            cout<<"Sender: "<<currentBlock->tr->sender<<endl;
+            cout<<"Reciever: "<<currentBlock->tr->reciever<<endl;
+            cout<<"prevHash: "<<currentBlock->prevHash<<endl;
+            cout<<"myHash: "<<currentBlock->myHash<<endl;
             //printf("\nIs Block Valid?: %d\n", currentBlock->ZKP());
         }
     }
@@ -212,8 +219,6 @@ static int callback(void* data,int argc,char** argv,char** azColName)
     //fprintf(stderr,"%s: ",(const char*)data);
     for(int i=0;i<argc;i++)
     {
-        //azColName[i] is name of attribute
-        //argv[i] is value in string
         if(i==0)
             ini=stoi(argv[i]);
         if(i==1)
