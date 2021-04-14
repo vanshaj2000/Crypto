@@ -1,3 +1,9 @@
+/*
+Vanshaj Aggarwal 2018A7PS0309H
+Utkarsh Verma 2018AAPS0383H
+Kartik Kanotra 2018A3PS0649H
+Saksham Pandey 2018A7PS0259H
+*/
 #include<bits/stdc++.h>
 #include <sqlite3.h>
 #include "sha256.h"
@@ -8,7 +14,7 @@ Unique ID's
 Vanshaj-123
 Utkarsh-321
 Kartik-132
-Pandey-231
+Saksham-231
 */
 vector<string> users={"Vanshaj","Utkarsh","Kartik","Saksham"};
 vector<int> ys={53,89,68,34};
@@ -382,12 +388,12 @@ public:
     }
     void addBlock(Transaction* data)
     {
-        vUser[data->sender].push_back(data);
-        vUser[data->reciever].push_back(data);
         Block* preB=BC[BC.size()-1];
         Block* nw=new Block((preB->index)+1,preB->myHash,data);
-        if(nw->mine(2))
+        if(nw->mine(3))
         {
+            vUser[data->sender].push_back(data);
+            vUser[data->reciever].push_back(data);
             sqlite3* DB;
             char* messaggeError;
             int exit=0;
@@ -517,6 +523,9 @@ int main()
         glob->addBlock(trn);
     }
     glob->printChain();
-    //ch->viewUser("vanshaj");
+    cout<<"\nEnter Username to view transactions"<<endl;
+    string sss;
+    cin>>sss;
+    glob->viewUser(sss);
     return 0;
 }
