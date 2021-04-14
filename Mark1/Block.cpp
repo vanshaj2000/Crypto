@@ -2,8 +2,11 @@
 #include <sqlite3.h>
 #include "sha256.h"
 #include "DES.h"
+typedef long long ll;
 using namespace std;
-
+vector<string> users={"Vanshaj","Utkarsh","Kartik","Saksham"};
+vector<int> ys={53,89,68,34};
+ll r;
 struct Transaction
 {
     double amount;
@@ -46,7 +49,11 @@ public:
             ans+=getDES(temp.substr(i,16));
         return ans;
     }
-    void mine(int diff)
+    int getIndex()
+    {
+        return index;
+    }
+    bool mine(int diff)
     {
         cout<<"Mining Begins"<<endl;
         string ch(diff,'0');
@@ -57,29 +64,31 @@ public:
             nonce++;
         }
         cout<<"Block Mined with hash "<<endl<<myHash<<endl;
+        return ZKP();
     }
     bool ZKP()//Zero-Knowledge Proof
     {
-        ll x=tr->sAdr,g=2,p=13;
-        ll y=pow(g,x);
-        y=y%p;
-        for(int i=0;i<p-1;i++)
+        int indd=-1;
+        for(int i=0;i<4;i++)
         {
-            for(int j=0;j<2;j++)
-            {
-                ll h=pow(2,i);
-                h=h%p;
-                ll s=(i+(j*x))%(p-1);
-                ll first=pow(g,s);
-                first=first%p;
-                ll sec=h*(pow(y,j));
-                sec=sec%p;
-                if(first==sec)
-                {
-                    cout<<"\nTransaction verified";
-                    return true;
-                }
-            }
+            if(tr->sender==users[i])
+                indd=i;
+        }
+        if(indd==-1)
+        {
+            cout<<"User is not verified"<<endl;
+            return false;
+        }
+        ll s=tr->sAdr,g=2,p=101;
+        ll h=(((long long int)(pow(g, r)))%p);
+        ll b=1;
+        ll y=ys[indd];
+        ll B = (((long long int)(h * (long long int)(pow(ys[indd], b))) % p));
+        ll A = ( (long long int)( pow(g, s) )) % p;
+        if(A==B)
+        {
+            cout<<"Transaction Verified"<<endl;
+            return true;
         }
         cout<<"Transaction is not verified"<<endl;
         return false;
@@ -121,30 +130,32 @@ public:
         vUser[data->reciever].push_back(data);
         Block* preB=BC[BC.size()-1];
         Block* nw=new Block((preB->index)+1,preB->myHash,data);
-        nw->mine(2);
-        sqlite3* DB;
-        char* messaggeError;
-        int exit=0;
-        exit=sqlite3_open("blockchain.db", &DB);
-        string str="INSERT INTO BLOCK VALUES(";
-        str+=to_string(nw->index)+",";
-        str+="'"+nw->tr->sender+"',";
-        str+="'"+nw->tr->reciever+"',";
-        str+="'"+nw->prevHash+nw->myHash+"',";
-        str+="'"+to_string(nw->tr->sAdr)+"',";
-        str+=to_string(nw->tr->amount);
-        str+=");";
-        //cout<<str<<endl;
-        exit=sqlite3_exec(DB,str.c_str(),NULL,0,&messaggeError);
-        if(exit!=SQLITE_OK)
+        if(nw->mine(2))
         {
-            cerr<<"Error Insert"<<endl;
-            sqlite3_free(messaggeError);
+            sqlite3* DB;
+            char* messaggeError;
+            int exit=0;
+            exit=sqlite3_open("blockchain.db", &DB);
+            string str="INSERT INTO BLOCK VALUES(";
+            str+=to_string(nw->index)+",";
+            str+="'"+nw->tr->sender+"',";
+            str+="'"+nw->tr->reciever+"',";
+            str+="'"+nw->prevHash+nw->myHash+"',";
+            str+="'"+to_string(nw->tr->sAdr)+"',";
+            str+=to_string(nw->tr->amount);
+            str+=");";
+            //cout<<str<<endl;
+            exit=sqlite3_exec(DB,str.c_str(),NULL,0,&messaggeError);
+            if(exit!=SQLITE_OK)
+            {
+                cerr<<"Error Insert"<<endl;
+                sqlite3_free(messaggeError);
+            }
+            else
+                cout<<"Records created Successfully!"<<endl;       
+            sqlite3_close(DB);
+            BC.push_back(nw);
         }
-        else
-            cout<<"Records created Successfully!"<<endl;       
-        sqlite3_close(DB);
-        BC.push_back(nw);
     }
     bool isChainValid()
     {
@@ -171,7 +182,7 @@ public:
             cout<<"\nRecieverKey: "<<currentBlock->tr->reciever;
             cout<<"\nprevHash: "<<currentBlock->prevHash;
             cout<<"\nmyHash: "<<currentBlock->myHash;
-            printf("\nIs Block Valid?: %d\n", currentBlock->ZKP());
+            //printf("\nIs Block Valid?: %d\n", currentBlock->ZKP());
         }
     }
     void viewUser(string user)
@@ -241,7 +252,13 @@ int main()
         string snd,rcv;
         cin>>snd>>rcv;
         int am,ad;
-        cin>>am>>ad;
+        cin>>am;
+        cout<<"Choose a r between 0 and 20"<<endl;
+        int tt;
+        cin>>tt;
+        r=tt;
+        cout<<"Give s such that s = ( r + bx )mod( p-1 ) where x= YOUR UNIQUE ID and p=101 and b=1"<<endl;
+        cin>>ad;
         Transaction* trn=new Transaction(am,snd,rcv,ad);
         glob->addBlock(trn);
     }
