@@ -10,7 +10,7 @@ Saksham Pandey 2018A7PS0259H
 typedef long long ll;
 using namespace std;
 /*
-Unique ID's
+Unique id's
 Vanshaj-123
 Utkarsh-321
 Kartik-132
